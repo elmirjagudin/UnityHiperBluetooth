@@ -52,8 +52,13 @@ public class NMEA : MonoBehaviour
 
     }
 
-    void OnApplicationQuit()
+
+    void OnApplicationPause(bool paused)
     {
-        ntrip.Abort();
+        if (paused)
+        {
+            hiper.Disconnect();
+            ntrip.Abort();
+        }
     }
 }

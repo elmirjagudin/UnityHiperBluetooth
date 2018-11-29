@@ -9,6 +9,7 @@ using brab.bluetooth;
 
 public class HiperBT
 {
+    BluetoothSocket sock;
     StreamReader reader;
     HiperWriter writer;
 
@@ -34,7 +35,6 @@ public class HiperBT
         BluetoothDevice hiper = null;
         foreach (var c in ba.getBondedDevices())
         {
-
             if (c.getAddress() == "00:07:80:36:02:C6")
             {
                 hiper = c;
@@ -47,7 +47,7 @@ public class HiperBT
         }
 
         var uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
-        var sock = hiper.createRfcommSocketToServiceRecord(uuid);
+        sock = hiper.createRfcommSocketToServiceRecord(uuid);
 
         sock.connect();
 
@@ -73,5 +73,10 @@ public class HiperBT
     public void PushRTCM(byte[] data, int len)
     {
         writer.Write(data, 0, len);
+    }
+
+    public void Disconnect()
+    {
+        sock.close();
     }
 }

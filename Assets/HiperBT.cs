@@ -24,6 +24,30 @@ public class HiperBT
         }
     }
 
+    void ResetCmdMode(HiperWriter bw)
+    {
+        /*
+         * it seems that by sending following data:
+         *
+         * 128 bytes of 0x02
+         * 128 bytes of 0x01
+         * bytes 0x0d 0x0a
+         *
+         * the Bluetooth terminal resets back from RCTM3 input mode to
+         * command input mode
+         */
+        var magic = new byte[256];
+
+        for (int i = 0; i < 128; i += 1)
+        {
+            magic[i] = 2;
+            magic[128+i] = 1;
+        }
+
+        bw.Write(magic);
+        bw.WriteStr("\r\n");
+    }
+
     public HiperBT()
     {
         var ba = BluetoothAdapter.getDefaultAdapter();
@@ -57,11 +81,13 @@ public class HiperBT
         reader = new StreamReader(istream);
         writer = new HiperWriter(ostream);
 
-        writer.WriteStr("set,/par/dev/ntrip/a/imode,cmd\n\r");
-        writer.WriteStr("print,/par/dev/ntrip/a/imode\n\r");
-        writer.WriteStr("list,/dev\n\r");
-        writer.WriteStr("em,/cur/term,/msg/nmea/GGA:.05\n\r");
-        writer.WriteStr("set,/par/cur/term/imode,rtcm3\n\r");
+        ResetCmdMode(writer);
+
+        writer.WriteStr("set,/par/dev/ntrip/a/imode,cmd\r\n");
+        writer.WriteStr("%ORANGE%list\r\n");
+        writer.WriteStr("em,/cur/term,/msg/nmea/GGA:.05\r\n");
+        //writer.WriteStr("dm,/cur/term,/msg/nmea/GGA\r\n");
+        writer.WriteStr("set,/par/cur/term/imode,rtcm3\r\n");
         writer.Flush();
     }
 
